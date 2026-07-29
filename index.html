@@ -1351,7 +1351,7 @@ function matchPts(pred, m){
   return {total,detail,incomplete:false};
 }
 function computeScoreFor(preds){
-  let total=0, played=0, pending=0;
+  let total=0, played=0, pending=0, winnerHits=0, scoreHits=0;
   const perMatch={};
   Object.values(matches).forEach(m=>{
     const finished = !isEmpty(m.res_a) && !isEmpty(m.res_b);
@@ -1360,9 +1360,16 @@ function computeScoreFor(preds){
     if(!pred || isEmpty(pred.gol_a)){ perMatch[m.id]={status:'nopred', m}; return; }
     const r = matchPts(pred, m);
     total += r.total; played++;
+    // Contadores aparte del sistema de puntos: aciertos "en bruto".
+    const pA=Number(pred.gol_a), pB=Number(pred.gol_b), rA=Number(m.res_a), rB=Number(m.res_b);
+    const pRes = pA>pB?'A':pA<pB?'B':'D';
+    const rRes = rA>rB?'A':rA<rB?'B':'D';
+    if(pRes===rRes) winnerHits++;
+    if(pA===rA) scoreHits++;
+    if(pB===rB) scoreHits++;
     perMatch[m.id] = {status:'scored', total:r.total, detail:r.detail, pred, m};
   });
-  return {total, played, pending, perMatch};
+  return {total, played, pending, winnerHits, scoreHits, perMatch};
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1793,6 +1800,7 @@ function renderLeaderboard(){
         <span class="lb-pts">${e.total} pts</span>
       </div>
       <div class="lb-sub">${e.played} partidos puntuados · ${e.pending} pendientes</div>
+      <div class="lb-sub">⚽ ${e.winnerHits} aciertos de ganador/empate · 🎯 ${e.scoreHits} aciertos de marcador</div>
       <div class="lb-detail" id="detail-${e.uid}"></div>
     </div>`;
   }).join('');
