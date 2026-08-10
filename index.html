@@ -1109,6 +1109,26 @@ let myGoldenBoot = '';   // my Golden Boot pick (raw text)
 let goldenBootActual = '';  // the real winner's name, set by admin
 
 function isEmpty(v){ return v===''||v===null||v===undefined; }
+function toDatetimeLocalValue(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+const DAY_ABBR = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTH_ABBR = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+function formatKickoff(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${DAY_ABBR[d.getDay()]}, ${d.getDate()} ${MONTH_ABBR[d.getMonth()]} ${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+// Fecha a mostrar: si el partido tiene hora de inicio real, se formatea sola;
+// si no (partidos viejos sin hora exacta, ej. la fase de liga cargada de una),
+// se usa el texto libre que ya tenía guardado.
+function displayDate(m){
+  return m.kickoff_at ? formatKickoff(m.kickoff_at) : (m.date||'');
+}
 function crestUrl(teamName){
   return `${SUPABASE_URL}/storage/v1/object/public/escudos/${encodeURIComponent(teamName)}.png`;
 }
@@ -1143,12 +1163,12 @@ function findVueltaPair(m){
 function findIdaPair(m){
   return Object.values(matches).find(x=> x.id!==m.id && sameTie(x,m) && x.leg!=='vuelta');
 }
-// ¿Este partido es el que decide quién avanza (ida sin vuelta emparejada, la vuelta, o la final)?
+// ¿Este partido es el que decide quién avanza (la vuelta, o la final —
+// nunca la ida, ya que en la Champions los penales solo se dan tras la vuelta)?
 function isDecisionMatch(m){
   if(m.phase==='league') return false;
   if(m.phase==='final') return true;
-  if(m.leg==='vuelta') return true;
-  return !findVueltaPair(m); // partido único de prueba (sin vuelta creada todavía)
+  return m.leg==='vuelta';
 }
 // ¿El global (o el partido único) terminó empatado, así que hace falta definir quién avanza?
 function isAggregateDrawn(m){
@@ -1718,15 +1738,18 @@ function renderPredictions(){
 }
 
 function matchCardHTML(m){
-  const finished = !isEmpty(m.res_a) && !isEmpty(m.res_b);
+  const resultIn = !isEmpty(m.res_a) && !isEmpty(m.res_b);
+  const kickoffPassed = m.kickoff_at && new Date() >= new Date(m.kickoff_at);
+  const finished = resultIn || kickoffPassed;
   const d = myPreds[m.id] || {};
   const disabled = finished ? 'disabled' : '';
   const isDrawn = !finished && !isEmpty(d.gol_a) && !isEmpty(d.gol_b) && Number(d.gol_a)===Number(d.gol_b);
+  const lockLabel = resultIn ? 'YA JUGADO' : (kickoffPassed ? 'YA EMPEZÓ' : '');
   return `
   <div class="card ${finished?'locked':''}">
     <div class="card-head">
-      <span class="pid">${getTabLabel(getTabKey(m))}${finished?' <span class="flag flag-locked">YA JUGADO</span>':''}</span>
-      <span class="meta">${m.date||''}</span>
+      <span class="pid">${getTabLabel(getTabKey(m))}${lockLabel?` <span class="flag flag-locked">${lockLabel}</span>`:''}</span>
+      <span class="meta">${displayDate(m)}</span>
     </div>
     <div class="matchup">
       <div class="team">${crestImg(m.team_a)}${m.team_a}</div>
@@ -1747,7 +1770,7 @@ function matchCardHTML(m){
       <div class="draw-opt ${d.advance==='A'?'active':''}" data-id="${m.id}" data-advance="A">${m.team_a}</div>
       <div class="draw-opt ${d.advance==='B'?'active':''}" data-id="${m.id}" data-advance="B">${m.team_b}</div>
     </div>` : ''}
-    ${finished ? `<div class="meta" style="text-align:left;margin-top:6px;">Resultado real: ${m.team_a} ${m.res_a}–${m.res_b} ${m.team_b}</div>` : ''}
+    ${resultIn ? `<div class="meta" style="text-align:left;margin-top:6px;">Resultado real: ${m.team_a} ${m.res_a}–${m.res_b} ${m.team_b}</div>` : ''}
   </div>`;
 }
 
@@ -2004,8 +2027,9 @@ function renderAdmin(){
           <option value="ida">Ida (o partido único)</option>
           <option value="vuelta">Vuelta</option>
         </select>
-        <input type="text" id="admDate" placeholder="Fecha (ej. Mar 23 sep · 15:00)">
+        <input type="datetime-local" id="admKickoff" style="background:var(--panel-2);border:1px solid var(--line);border-radius:7px;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:13px;padding:9px 10px;">
       </div>
+      <p style="color:var(--muted);font-size:11px;margin:4px 0 10px;">↑ Fecha y hora del partido. Se muestra sola con el formato "Vie, 7 Ago 2026 · 17:55", y el pronóstico se bloquea solo en cuanto llegue esa hora.</p>
       <div class="form-grid">
         <input type="text" id="admTeamA" placeholder="Equipo local">
         <input type="text" id="admTeamB" placeholder="Equipo visitante">
@@ -2069,13 +2093,20 @@ function adminMatchHTML(m){
   const finished = !isEmpty(m.res_a) && !isEmpty(m.res_b);
   const showAdvancePicker = finished && isDecisionMatch(m) && isAggregateDrawn(m);
   const legLabel = m.leg==='vuelta' ? ' · Vuelta' : (m.leg==='ida' ? ' · Ida' : '');
+  const kickoffPassed = m.kickoff_at && new Date() >= new Date(m.kickoff_at);
   return `
   <div class="admin-match" data-id="${m.id}">
     <div class="admin-match-head">
       <span class="admin-match-title" style="display:flex;align-items:center;gap:6px;">${crestImg(m.team_a)}${m.team_a} vs ${crestImg(m.team_b)}${m.team_b}</span>
       <span class="admin-match-meta">${PHASE_LABEL[m.phase]}${m.matchday?' · J'+m.matchday:''}${legLabel}</span>
     </div>
-    <div class="admin-match-meta">${m.date||'sin fecha'}</div>
+    <div class="admin-match-meta">${displayDate(m)||'sin fecha'}</div>
+    <div class="admin-result-row" style="margin-top:6px;">
+      <span class="rowlbl">Hora de inicio:</span>
+      <input type="datetime-local" class="kickoff-input" data-id="${m.id}" value="${toDatetimeLocalValue(m.kickoff_at)}"
+        style="background:var(--panel-2);border:1px solid var(--line);border-radius:6px;color:var(--text);font-size:12px;padding:4px 6px;">
+      ${kickoffPassed ? '<span class="flag flag-locked">YA EMPEZÓ</span>' : ''}
+    </div>
     <div class="admin-result-row">
       <span class="rowlbl">Resultado:</span>
       <input type="number" min="0" class="goal-input" data-id="${m.id}" data-field="res_a" value="${m.res_a??''}">
@@ -2105,7 +2136,9 @@ function attachAdminEvents(){
     const leg = document.getElementById('admLeg').value;
     const teamA = document.getElementById('admTeamA').value.trim();
     const teamB = document.getElementById('admTeamB').value.trim();
-    const date = document.getElementById('admDate').value.trim();
+    const kickoffRaw = document.getElementById('admKickoff').value;
+    const kickoff_at = kickoffRaw ? new Date(kickoffRaw).toISOString() : null;
+    const date = formatKickoff(kickoff_at);
     const decisive = phase !== 'league';
     const isTwoLegPhase = ['playoff','r16','qf','sf'].includes(phase);
     if(!teamA || !teamB){ alert('Escribe ambos equipos.'); return; }
@@ -2113,15 +2146,27 @@ function attachAdminEvents(){
     const { data, error } = await supabase.from('matches').insert({
       phase, matchday: (phase==='league' && matchday) ? Number(matchday) : null,
       leg: isTwoLegPhase ? leg : null,
-      team_a: teamA, team_b: teamB, date, decisive,
+      team_a: teamA, team_b: teamB, date, kickoff_at, decisive,
       order_num: maxOrder+1,
     }).select();
     if(error){ alert('Error al agregar: '+error.message); return; }
     matches[data[0].id] = data[0];
     document.getElementById('admTeamA').value='';
     document.getElementById('admTeamB').value='';
-    document.getElementById('admDate').value='';
+    document.getElementById('admKickoff').value='';
     renderAdmin();
+  });
+
+  document.querySelectorAll('.kickoff-input').forEach(inp=>{
+    inp.addEventListener('change', async ()=>{
+      const id = Number(inp.dataset.id);
+      const kickoff_at = inp.value ? new Date(inp.value).toISOString() : null;
+      const date = formatKickoff(kickoff_at);
+      const { data, error } = await supabase.from('matches').update({kickoff_at, date}).eq('id', id).select();
+      if(error){ alert('Error al guardar la hora: '+error.message); return; }
+      matches[id] = data[0];
+      renderAdmin();
+    });
   });
 
   document.querySelectorAll('.admin-match .draw-opt[data-advance]').forEach(btn=>{
@@ -2178,6 +2223,9 @@ function attachAdminEvents(){
 document.querySelectorAll('.mode-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{ mode = btn.dataset.mode; render(); });
 });
+// Revisa cada minuto si algún partido ya "empezó" por horario, para
+// bloquear el pronóstico sola aunque nadie recargue la página.
+setInterval(()=>{ if(mode==='pred') render(); }, 60000);
 if(supabase){
   const connectBtn = document.getElementById('connectBtn');
   if(connectBtn){
