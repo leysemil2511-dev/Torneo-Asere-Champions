@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#05070F">
 <title>Torneo Asere · Champions League</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1033,6 +1039,7 @@ try {
 ═══════════════════════════════════════════════════════ */
 const SUPABASE_URL = "https://ryrxauogzdhtgwpmoeoc.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5cnhhdW9nemRodGd3cG1vZW9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMzQxMjEsImV4cCI6MjA5OTgxMDEyMX0.fKKBAfzUklL50J0DglU0eKHlrEH1hBZzI6Jf9wuNT6M";
+const VAPID_PUBLIC_KEY = "BH7RXOm4Y3SyjnwB7LzprN3X9pj9xJat6Rb5Pk6h66R_1mdiC1-B6LrOzJT-yRgsyrY21UtSBssmEiyADssZpY4";
 
 function showFatalError(msg){
   const el = document.getElementById('content');
@@ -1482,6 +1489,63 @@ function renderWhoAmI(){
         alert('Clave incorrecta.');
       }
     });
+  }
+  renderNotifButton();
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICACIONES PUSH
+═══════════════════════════════════════════════════════ */
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+function pushSupported(){
+  return 'serviceWorker' in navigator && 'PushManager' in window;
+}
+async function renderNotifButton(){
+  const whoami = document.getElementById('whoami');
+  if(!pushSupported()) return; // navegador sin soporte: no mostramos nada
+  let subscribed = false;
+  try{
+    const reg = await navigator.serviceWorker.getRegistration();
+    if(reg){ const sub = await reg.pushManager.getSubscription(); subscribed = !!sub; }
+  }catch(e){}
+  if(document.getElementById('notifBtn')) return; // ya está, no lo dupliques
+  const btn = document.createElement('a');
+  btn.id = 'notifBtn';
+  btn.style.cssText = 'color:var(--muted);text-decoration:underline;cursor:pointer;margin-left:8px;';
+  btn.textContent = subscribed ? '🔔 Notificaciones activadas' : '🔕 Activar notificaciones';
+  btn.addEventListener('click', enablePushNotifications);
+  whoami.appendChild(btn);
+}
+async function enablePushNotifications(){
+  if(!pushSupported()){ alert('Tu navegador no soporta notificaciones push.'); return; }
+  try{
+    const reg = await navigator.serviceWorker.register('service-worker.js');
+    const perm = await Notification.requestPermission();
+    if(perm !== 'granted'){ alert('No diste permiso de notificaciones — puedes activarlo luego desde este mismo botón.'); return; }
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+    const j = sub.toJSON();
+    const { error } = await supabase.from('push_subscriptions').upsert({
+      user_id: myUid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth,
+    }, {onConflict:'user_id,endpoint'});
+    if(error){ alert('Se activó el permiso pero no se pudo guardar: '+error.message); return; }
+    alert('¡Notificaciones activadas!');
+    const btn = document.getElementById('notifBtn');
+    if(btn) btn.textContent = '🔔 Notificaciones activadas';
+  }catch(e){
+    alert('No se pudo activar: ' + (e.message||e));
   }
 }
 
@@ -2051,6 +2115,16 @@ function renderAdmin(){
       </div>
     </div>
     <div class="admin-section">
+      <h3>🔔 Notificaciones push</h3>
+      <p style="color:var(--muted);font-size:12px;margin:0 0 10px;">Manda un aviso a todos los que hayan activado las notificaciones. Úsalo primero para probar si de verdad llegan.</p>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <input type="text" id="pushTitle" placeholder="Título (ej. ¡Resultado cargado!)" style="background:var(--panel-2);border:1px solid var(--line);border-radius:7px;color:var(--text);font-size:13px;padding:9px 10px;">
+        <input type="text" id="pushBody" placeholder="Mensaje (ej. Barcelona 2-1 Real Madrid)" style="background:var(--panel-2);border:1px solid var(--line);border-radius:7px;color:var(--text);font-size:13px;padding:9px 10px;">
+      </div>
+      <button class="btn" id="pushSendBtn" style="margin-top:8px;">Enviar notificación</button>
+      <p id="pushResult" style="color:var(--muted);font-size:11.5px;margin-top:8px;"></p>
+    </div>
+    <div class="admin-section">
       <h3>⚽ Bota de Oro — Ganador real</h3>
       <p style="color:var(--muted);font-size:12px;margin:0 0 10px;">Escribe el nombre del máximo goleador real. La app lo compara con los pronósticos de todos, tolerando errores menores de escritura.</p>
       <input type="text" id="admGoldenBoot" placeholder="Nombre del jugador" value="${(goldenBootActual||'').replace(/"/g,'&quot;')}"
@@ -2130,6 +2204,24 @@ function adminMatchHTML(m){
 }
 
 function attachAdminEvents(){
+  const pushBtn = document.getElementById('pushSendBtn');
+  if(pushBtn){
+    pushBtn.addEventListener('click', async ()=>{
+      const title = document.getElementById('pushTitle').value.trim() || 'Torneo Asere';
+      const body = document.getElementById('pushBody').value.trim();
+      const resultEl = document.getElementById('pushResult');
+      resultEl.textContent = 'Enviando…';
+      try{
+        const { data, error } = await supabase.functions.invoke('send-push', {
+          body: { title, body, url: location.href },
+        });
+        if(error){ resultEl.textContent = 'Error: ' + error.message; return; }
+        resultEl.textContent = `Enviadas: ${data.sent} · Fallidas: ${data.failed} · Total suscritos: ${data.total}`;
+      }catch(e){
+        resultEl.textContent = 'Error: ' + (e.message||e);
+      }
+    });
+  }
   document.getElementById('admAddBtn').addEventListener('click', async ()=>{
     const phase = document.getElementById('admPhase').value;
     const matchday = document.getElementById('admMatchday').value;
