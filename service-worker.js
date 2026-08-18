@@ -11,7 +11,7 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Torneo Asere';
   const options = {
     body: data.body || '',
-    icon: 'icon-192.png',
+    icon: data.icon || 'icon-192.png',
     badge: 'icon-192.png',
     data: { url: data.url || './' },
   };

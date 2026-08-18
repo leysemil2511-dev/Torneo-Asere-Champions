@@ -1142,6 +1142,46 @@ function crestUrl(teamName){
 function crestImg(teamName){
   return `<img src="${crestUrl(teamName)}" class="crest" alt="" onerror="this.style.display='none'">`;
 }
+
+/* ── Ícono compuesto para notificaciones: los dos escudos superpuestos ── */
+function generateMatchIconBlob(teamA, teamB){
+  return new Promise((resolve, reject)=>{
+    const size = 192;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const imgA = new Image(), imgB = new Image();
+    imgA.crossOrigin = 'anonymous'; imgB.crossOrigin = 'anonymous';
+    let loaded = 0;
+    function tryDraw(){
+      loaded++;
+      if(loaded < 2) return;
+      const big = size*0.62, small = size*0.62;
+      // Local (A): arriba-izquierda, detrás. Visitante (B): abajo-derecha, encima.
+      ctx.drawImage(imgA, 0, 0, big, big);
+      ctx.drawImage(imgB, size-small, size-small, small, small);
+      canvas.toBlob(blob=>{ blob ? resolve(blob) : reject(new Error('No se pudo generar el ícono')); }, 'image/png');
+    }
+    imgA.onload = tryDraw; imgB.onload = tryDraw;
+    imgA.onerror = ()=>reject(new Error('No se pudo cargar el escudo de '+teamA));
+    imgB.onerror = ()=>reject(new Error('No se pudo cargar el escudo de '+teamB));
+    imgA.src = crestUrl(teamA); imgB.src = crestUrl(teamB);
+  });
+}
+async function generateAndSaveMatchIcon(matchId, teamA, teamB){
+  try{
+    const blob = await generateMatchIconBlob(teamA, teamB);
+    const path = `match-${matchId}.png`;
+    const { error: upErr } = await supabase.storage.from('match-icons').upload(path, blob, {upsert:true, contentType:'image/png'});
+    if(upErr){ console.error('Icono no guardado:', upErr.message); return; }
+    const { data: urlData } = supabase.storage.from('match-icons').getPublicUrl(path);
+    await supabase.from('matches').update({icon_url: urlData.publicUrl}).eq('id', matchId);
+    if(matches[matchId]) matches[matchId].icon_url = urlData.publicUrl;
+  }catch(e){
+    console.error('No se pudo generar el ícono del partido:', e.message||e);
+    // Si falla, el partido simplemente se queda sin ícono compuesto — no rompe nada más.
+  }
+}
 function getAllLeagueTeams(){
   const set = new Set();
   Object.values(matches).forEach(m=>{
@@ -1546,6 +1586,23 @@ async function enablePushNotifications(){
     if(btn) btn.textContent = '🔔 Notificaciones activadas';
   }catch(e){
     alert('No se pudo activar: ' + (e.message||e));
+  }
+}
+// Se llama sola en cuanto el admin guarda el resultado real de un partido.
+async function notifyResultAdded(m){
+  if(isEmpty(m.res_a) || isEmpty(m.res_b)) return;
+  try{
+    await supabase.functions.invoke('send-push', {
+      body: {
+        title: '¡Resultado agregado!',
+        body: `${m.team_a} ${m.res_a}-${m.res_b} ${m.team_b}`,
+        url: './',
+        icon: m.icon_url || undefined,
+      },
+    });
+  }catch(e){
+    console.error('No se pudo notificar el resultado:', e.message||e);
+    // Silencioso a propósito: si falla el aviso, no debe interrumpir el guardado del resultado.
   }
 }
 
@@ -2247,6 +2304,7 @@ function attachAdminEvents(){
     document.getElementById('admTeamB').value='';
     document.getElementById('admKickoff').value='';
     renderAdmin();
+    generateAndSaveMatchIcon(data[0].id, teamA, teamB); // en segundo plano, no bloquea nada
   });
 
   document.querySelectorAll('.kickoff-input').forEach(inp=>{
@@ -2293,6 +2351,7 @@ function attachAdminEvents(){
         matches[id] = data[0];
         renderAdmin();
         maybeAutoCreateFinal();
+        notifyResultAdded(data[0]);
       }
     });
   });
