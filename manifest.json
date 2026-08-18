@@ -1,6 +1,6 @@
 {
   "name": "Torneo Asere - Champions League",
-  "short_name": "Torneo Asere",
+  "short_name": "Asere Champions",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
