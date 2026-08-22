@@ -1553,9 +1553,18 @@ async function renderNotifButton(){
   let subscribed = false;
   try{
     const reg = await navigator.serviceWorker.getRegistration();
-    if(reg){ const sub = await reg.pushManager.getSubscription(); subscribed = !!sub; }
+    if(reg){
+      const sub = await reg.pushManager.getSubscription();
+      if(sub){
+        // No basta con que el navegador tenga la suscripción — hay que
+        // confirmar que de verdad quedó guardada en la base de datos.
+        const { data } = await supabase.from('push_subscriptions').select('endpoint').eq('user_id', myUid).eq('endpoint', sub.endpoint).maybeSingle();
+        subscribed = !!data;
+      }
+    }
   }catch(e){}
-  if(document.getElementById('notifBtn')) return; // ya está, no lo dupliques
+  const existing = document.getElementById('notifBtn');
+  if(existing) existing.remove(); // vuelve a evaluar por si el estado cambió
   const btn = document.createElement('a');
   btn.id = 'notifBtn';
   btn.style.cssText = 'color:var(--muted);text-decoration:underline;cursor:pointer;margin-left:8px;';
@@ -1582,8 +1591,7 @@ async function enablePushNotifications(){
     }, {onConflict:'user_id,endpoint'});
     if(error){ alert('Se activó el permiso pero no se pudo guardar: '+error.message); return; }
     alert('¡Notificaciones activadas!');
-    const btn = document.getElementById('notifBtn');
-    if(btn) btn.textContent = '🔔 Notificaciones activadas';
+    renderNotifButton();
   }catch(e){
     alert('No se pudo activar: ' + (e.message||e));
   }
