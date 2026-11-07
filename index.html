@@ -1206,42 +1206,7 @@ ACAoigIqKKAD/9k=");
   .mdhead:first-child{margin-top:0;}
 
   .card{background:var(--panel-light);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;}
-  /* ── Estética blanca: tarjetas de pronóstico (.card) y del Panel Admin (.admin-match) ── */
-  .card, .admin-match{background:#FFFFFF;border:1px solid #E3E3E8;box-shadow:0 2px 10px rgba(0,0,0,.18);}
-  .card .pid, .admin-match .pid{color:#6B7280;}
-  .card .flag-locked, .admin-match .flag-locked{color:#B91C1C;border-color:#B91C1C;background:rgba(185,28,28,.08);}
-  .card .mgrid, .admin-match .mgrid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:14px;row-gap:8px;align-items:center;margin-top:2px;}
-  .card .mgrid-label, .admin-match .mgrid-label{font-family:Consolas,Menlo,Monaco,monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9AA1AC;text-align:center;}
-  .card .mteam, .admin-match .mteam{display:flex;align-items:center;gap:8px;font-family:'ManropeBold',Arial,sans-serif;font-weight:700;
-    font-size:17px;color:#12141A;min-width:0;}
-  .card .mteam span, .admin-match .mteam span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .card .mteam .crest, .admin-match .mteam .crest{width:28px;height:28px;flex:none;}
-  .card .goal-input, .card .sot-input, .admin-match .goal-input, .admin-match .sot-input{
-    width:44px;height:40px;font-size:17px;background:#F3F4F6;border:1px solid #D8DAE0;color:#12141A;}
-  @media (max-width:380px){
-    .card .mgrid, .admin-match .mgrid{column-gap:8px;}
-    .card .mteam, .admin-match .mteam{font-size:16px;gap:6px;}
-    .card .mteam .crest, .admin-match .mteam .crest{width:26px;height:26px;}
-    .card .goal-input, .card .sot-input, .admin-match .goal-input, .admin-match .sot-input{width:40px;}
-  }
-  .card .mdate, .admin-match .mdate{font-family:Consolas,Menlo,Monaco,monospace;font-size:11px;color:#8992A6;margin-top:10px;}
-  .card .draw-block, .admin-match .draw-block{background:#F3F4F6;}
-  .card .draw-lbl, .admin-match .draw-lbl{color:#12141A;}
-  .card .draw-opt, .admin-match .draw-opt{background:#fff;border-color:#D8DAE0;color:#374151;}
-  .card .draw-opt.active, .admin-match .draw-opt.active{background:var(--glow);color:#fff;border-color:var(--glow);}
-  .card.locked{opacity:.6;}
 
-  /* ── Panel Admin: contenedores, formularios y botones en blanco ── */
-  .admin-section{background:#FFFFFF;border:1px solid #E3E3E8;box-shadow:0 2px 10px rgba(0,0,0,.18);}
-  .admin-section h3{color:#12141A;}
-  .admin-section p{color:#6B7280 !important;}
-  .admin-section input, .admin-section select{background:#F3F4F6 !important;border:1px solid #D8DAE0 !important;color:#12141A !important;}
-  .admin-section .checkrow{color:#4B5563;}
-  .admin-section .btn.secondary{border-color:#D8DAE0;color:#4B5563;}
-  .admin-section .btn.danger{border-color:#DC2626;color:#DC2626;}
-  .admin-match .admin-match-meta, .admin-match .rowlbl{color:#6B7280;}
-  .admin-match .admin-match-title{color:#12141A;}
-  .admin-match .kickoff-input{background:#F3F4F6 !important;border:1px solid #D8DAE0 !important;color:#12141A !important;}
   .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;}
   .pid{font-family:Consolas,Menlo,Monaco,monospace;font-size:10px;color:var(--muted);letter-spacing:.06em;display:flex;align-items:center;gap:6px;}
   .flag{font-family:Consolas,Menlo,Monaco,monospace;font-size:9px;padding:1px 5px;border-radius:4px;border:1px solid;}
@@ -1349,6 +1314,45 @@ ACAoigIqKKAD/9k=");
     font-weight:700;font-size:14px;padding:11px;cursor:pointer;}
   .gate-err{color:var(--red);font-size:11.5px;margin-top:8px;min-height:14px;}
   .loading{color:var(--muted);font-size:13px;text-align:center;padding:40px 0;font-family:Consolas,Menlo,Monaco,monospace;}
+  /* ── Estética blanca: tarjetas de pronóstico (.card) y del Panel Admin (.admin-match) ── */
+  .card, .admin-match{background:#FFFFFF;border:1px solid #E3E3E8;box-shadow:0 2px 10px rgba(0,0,0,.18);}
+  .card .pid, .admin-match .pid{color:#6B7280;}
+  .card .flag-locked, .admin-match .flag-locked{color:#B91C1C;border-color:#B91C1C;background:rgba(185,28,28,.08);}
+  .card .mgrid, .admin-match .mgrid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:14px;row-gap:8px;align-items:center;margin-top:2px;}
+  .card .mgrid-label, .admin-match .mgrid-label{font-family:Consolas,Menlo,Monaco,monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9AA1AC;text-align:center;}
+  .card .mteam, .admin-match .mteam{display:flex;align-items:center;gap:8px;font-family:'ManropeBold',Arial,sans-serif;font-weight:700;
+    font-size:17px;color:#12141A;min-width:0;}
+  .card .mteam span, .admin-match .mteam span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card .mteam .crest, .admin-match .mteam .crest{width:28px;height:28px;flex:none;}
+  .card .goal-input, .card .sot-input, .admin-match .goal-input, .admin-match .sot-input{
+    width:44px;height:40px;font-size:17px;background:#F3F4F6;border:1px solid #D8DAE0;color:#12141A;}
+  @media (max-width:380px){
+    .card .mgrid, .admin-match .mgrid{column-gap:8px;}
+    .card .mteam, .admin-match .mteam{font-size:16px;gap:6px;}
+    .card .mteam .crest, .admin-match .mteam .crest{width:26px;height:26px;}
+    .card .goal-input, .card .sot-input, .admin-match .goal-input, .admin-match .sot-input{width:40px;}
+  }
+  .card .mdate, .admin-match .mdate{font-family:Consolas,Menlo,Monaco,monospace;font-size:11px;color:#8992A6;margin-top:10px;}
+  .card .draw-block, .admin-match .draw-block{background:#F3F4F6;}
+  .card .draw-lbl, .admin-match .draw-lbl{color:#12141A;}
+  .card .draw-opt, .admin-match .draw-opt{background:#fff;border-color:#D8DAE0;color:#374151;}
+  .card .draw-opt.active, .admin-match .draw-opt.active{background:var(--glow);color:#fff;border-color:var(--glow);}
+  .card.locked{opacity:.6;}
+
+  /* ── Panel Admin: contenedores, formularios y botones en blanco ── */
+  .admin-section{background:#FFFFFF;border:1px solid #E3E3E8;box-shadow:0 2px 10px rgba(0,0,0,.18);}
+  .admin-section h3{color:#12141A;}
+  .admin-section p{color:#6B7280 !important;}
+  .admin-section input, .admin-section select{background:#F3F4F6 !important;border:1px solid #D8DAE0 !important;color:#12141A !important;}
+  .admin-section .checkrow{color:#4B5563;}
+  .admin-section .btn.secondary{border-color:#D8DAE0;color:#4B5563;}
+  .admin-section .btn.danger{border-color:#DC2626;color:#DC2626;}
+  .admin-match .admin-match-meta, .admin-match .rowlbl{color:#6B7280;}
+  .admin-match .admin-match-title{color:#12141A;}
+  .admin-match .kickoff-input{background:#F3F4F6 !important;border:1px solid #D8DAE0 !important;color:#12141A !important;}
+  .admin-section.admin-list{background:transparent;border:none;box-shadow:none;padding:0;}
+  .admin-section.admin-list h3{color:var(--text);}
+  .admin-section .admin-match{margin-bottom:12px;}
 </style>
 </head>
 <body>
@@ -1477,6 +1481,12 @@ let myGoldenBoot = '';   // my Golden Boot pick (raw text)
 let goldenBootActual = '';  // the real winner's name, set by admin
 
 function isEmpty(v){ return v===''||v===null||v===undefined; }
+// ¿La persona tiene un campo seleccionado (teclado abierto)? Si es así, no se
+// debe reconstruir la pantalla por detrás o se le cierra el teclado y se pierde lo escrito.
+function isEditing(){
+  const a = document.activeElement;
+  return !!(a && a.tagName==='INPUT' && a.closest && a.closest('#content'));
+}
 function toDatetimeLocalValue(iso){
   if(!iso) return '';
   const d = new Date(iso);
@@ -1984,14 +1994,14 @@ async function fetchMatches(){
   matches = {};
   (data||[]).forEach(m=> matches[m.id]=m);
   maybeAutoCreateFinal();
-  if(mode !== 'admin') render();
+  if(mode !== 'admin' && !isEditing()) render();
 }
 async function fetchMyPredictions(){
   const { data, error } = await supabase.from('predictions').select('*').eq('user_id', myUid);
   if(error) return;
   myPreds = {};
   (data||[]).forEach(row=> myPreds[row.match_id]=row);
-  if(mode==='pred') render();
+  if(mode==='pred' && !isEditing()) render();
 }
 async function fetchAllPlayers(){
   const { data, error } = await supabase.from('players').select('*');
@@ -2116,7 +2126,7 @@ function startListeners(){
     .on('postgres_changes', {event:'*', schema:'public', table:'matches'}, fetchMatches)
     .subscribe();
   supabase.channel('rt-predictions')
-    .on('postgres_changes', {event:'*', schema:'public', table:'predictions'}, ()=>{ fetchMyPredictions(); fetchAllPredictions(); })
+    .on('postgres_changes', {event:'*', schema:'public', table:'predictions'}, ()=>{ fetchAllPredictions(); })
     .subscribe();
   supabase.channel('rt-players')
     .on('postgres_changes', {event:'*', schema:'public', table:'players'}, fetchAllPlayers)
@@ -2246,22 +2256,48 @@ function matchCardHTML(m){
       <div class="mgrid-label">TAP</div>
 
       <div class="mteam">${crestImg(m.team_a)}<span>${m.team_a}</span></div>
-      <input type="number" min="0" class="goal-input" data-id="${m.id}" data-field="gol_a" ${disabled} value="${d.gol_a??''}">
-      <input type="number" min="0" class="sot-input" data-id="${m.id}" data-field="sot_a" ${disabled} value="${d.sot_a??''}">
+      <input type="number" inputmode="numeric" min="0" class="goal-input" data-id="${m.id}" data-field="gol_a" ${disabled} value="${d.gol_a??''}">
+      <input type="number" inputmode="numeric" min="0" class="sot-input" data-id="${m.id}" data-field="sot_a" ${disabled} value="${d.sot_a??''}">
 
       <div class="mteam">${crestImg(m.team_b)}<span>${m.team_b}</span></div>
-      <input type="number" min="0" class="goal-input" data-id="${m.id}" data-field="gol_b" ${disabled} value="${d.gol_b??''}">
-      <input type="number" min="0" class="sot-input" data-id="${m.id}" data-field="sot_b" ${disabled} value="${d.sot_b??''}">
+      <input type="number" inputmode="numeric" min="0" class="goal-input" data-id="${m.id}" data-field="gol_b" ${disabled} value="${d.gol_b??''}">
+      <input type="number" inputmode="numeric" min="0" class="sot-input" data-id="${m.id}" data-field="sot_b" ${disabled} value="${d.sot_b??''}">
     </div>
     <div class="mdate">${displayDate(m)}</div>
-    ${(isDrawn && isDecisionMatch(m)) ? `
+    <div class="draw-slot" data-slot="${m.id}">${drawBlockHTML(m)}</div>
+    ${resultIn ? `<div class="mdate" style="margin-top:4px;">Resultado real: ${m.team_a} ${m.res_a}–${m.res_b} ${m.team_b}</div>` : ''}
+  </div>`;
+}
+
+// Contenido del bloque "Si empata, avanza:" de un partido (vacío si no aplica).
+function drawBlockHTML(m){
+  const resultIn = !isEmpty(m.res_a) && !isEmpty(m.res_b);
+  const kickoffPassed = m.kickoff_at && new Date() >= new Date(m.kickoff_at);
+  const d = myPreds[m.id] || {};
+  const isDrawn = !(resultIn || kickoffPassed) && !isEmpty(d.gol_a) && !isEmpty(d.gol_b) && Number(d.gol_a)===Number(d.gol_b);
+  if(!(isDrawn && isDecisionMatch(m))) return '';
+  return `
     <div class="draw-block">
       <span class="draw-lbl">Si empata (global), avanza:</span>
       <div class="draw-opt ${d.advance==='A'?'active':''}" data-id="${m.id}" data-advance="A">${m.team_a}</div>
       <div class="draw-opt ${d.advance==='B'?'active':''}" data-id="${m.id}" data-advance="B">${m.team_b}</div>
-    </div>` : ''}
-    ${resultIn ? `<div class="mdate" style="margin-top:4px;">Resultado real: ${m.team_a} ${m.res_a}–${m.res_b} ${m.team_b}</div>` : ''}
-  </div>`;
+    </div>`;
+}
+function bindDrawOpts(root){
+  root.querySelectorAll('.draw-opt[data-advance]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      savePredField(btn.dataset.id, 'advance', btn.dataset.advance);
+      refreshDrawSlot(btn.dataset.id);
+    });
+  });
+}
+// Actualiza únicamente ese bloque, sin tocar los campos donde se está escribiendo.
+function refreshDrawSlot(id){
+  const slot = document.querySelector(`.draw-slot[data-slot="${id}"]`);
+  const m = matches[id];
+  if(!slot || !m) return;
+  slot.innerHTML = drawBlockHTML(m);
+  bindDrawOpts(slot);
 }
 
 function attachPredEvents(){
@@ -2269,15 +2305,10 @@ function attachPredEvents(){
     inp.addEventListener('input', e=>{
       const id=e.target.dataset.id, field=e.target.dataset.field;
       savePredField(id, field, e.target.value);
-    });
-    inp.addEventListener('change', ()=>{ render(); });
-  });
-  document.querySelectorAll('.draw-opt[data-advance]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      savePredField(btn.dataset.id, 'advance', btn.dataset.advance);
-      render();
+      refreshDrawSlot(id);
     });
   });
+  document.querySelectorAll('.draw-slot').forEach(slot=> bindDrawOpts(slot));
 }
 
 function renderLeaderboard(){
@@ -2557,7 +2588,7 @@ function renderAdmin(){
         style="width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:#fff;
         font-family:'ChampionsDisplay',Arial Narrow,Arial,sans-serif;font-size:15px;padding:11px 12px;">
     </div>
-    <div class="admin-section">
+    <div class="admin-section admin-list">
       <h3>Partidos cargados (${matchList.length}${adminFilterTab!=='all' ? ' de '+allMatches.length : ''})</h3>
       <select id="admFilterSelect" style="width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:var(--text);
         font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:13px;padding:9px 10px;margin-bottom:12px;">
@@ -2747,7 +2778,7 @@ document.querySelectorAll('.mode-btn').forEach(btn=>{
 });
 // Revisa cada minuto si algún partido ya "empezó" por horario, para
 // bloquear el pronóstico sola aunque nadie recargue la página.
-setInterval(()=>{ if(mode==='pred') render(); }, 60000);
+setInterval(()=>{ if(mode==='pred' && !isEditing()) render(); }, 60000);
 if(supabase){
   const connectBtn = document.getElementById('connectBtn');
   if(connectBtn){
